@@ -78,8 +78,8 @@ export default function FileDrop({ onDocumentUploaded }: FileDropProps) {
         className={`
           border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer
           ${isDragOver 
-            ? 'border-blue-400 bg-blue-50' 
-            : 'border-gray-300 hover:border-gray-400'
+            ? 'border-secondary bg-accent' 
+            : 'border-slate-300 hover:border-secondary'
           }
           ${isUploading ? 'pointer-events-none opacity-50' : ''}
         `}
@@ -97,16 +97,16 @@ export default function FileDrop({ onDocumentUploaded }: FileDropProps) {
           disabled={isUploading}
         />
         
-        <FiUpload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+        <FiUpload className="mx-auto h-12 w-12 text-slate-600 mb-4" />
         
         <div className="space-y-2">
-          <h3 className="text-lg font-medium text-gray-700">
+          <h3 className="text-lg font-medium text-slate-600">
             {isDragOver ? 'Drop your PDF here' : 'Upload CAFR Document'}
           </h3>
-          <p className="text-gray-500">
+          <p className="text-slate-600">
             Drag and drop your PDF file, or click to browse
           </p>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-slate-600">
             Supports PDF files up to 50MB
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function FileDrop({ onDocumentUploaded }: FileDropProps) {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-primary h-2 rounded-full transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>

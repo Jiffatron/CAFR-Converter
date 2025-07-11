@@ -72,13 +72,13 @@ export default function ProcessingStatus({ document }: ProcessingStatusProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-50 border-green-200';
+        return 'bg-primary text-primary-content';
       case 'processing':
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-secondary text-secondary-content';
       case 'error':
-        return 'bg-red-50 border-red-200';
+        return 'bg-error text-error-content';
       default:
-        return 'bg-gray-50 border-gray-200';
+        return 'bg-neutral text-neutral-content';
     }
   };
 
@@ -104,19 +104,13 @@ export default function ProcessingStatus({ document }: ProcessingStatusProps) {
               {getStatusIcon(status)}
             </div>
             <div className="flex-1">
-              <h3 className="font-medium text-gray-900">{label}</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-medium">{label}</h3>
+              <p className="text-sm opacity-80">
                 {stepDescriptions[stepName as keyof typeof stepDescriptions]}
               </p>
             </div>
             <div className="flex-shrink-0">
-              <span className={`
-                px-2 py-1 text-xs rounded-full
-                ${status === 'completed' ? 'bg-green-100 text-green-800' : ''}
-                ${status === 'processing' ? 'bg-blue-100 text-blue-800' : ''}
-                ${status === 'error' ? 'bg-red-100 text-red-800' : ''}
-                ${status === 'pending' ? 'bg-gray-100 text-gray-600' : ''}
-              `}>
+              <span className="px-2 py-1 text-xs rounded-full bg-white bg-opacity-20">
                 {status}
               </span>
             </div>

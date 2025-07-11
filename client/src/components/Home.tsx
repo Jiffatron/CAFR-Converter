@@ -50,18 +50,18 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
       <header className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">
-          CAFR to CSV Converter
+        <h1 className="text-4xl font-bold text-primary mb-2">
+          Transform CAFR Reports to CSV
         </h1>
-        <p className="text-gray-600">
+        <p className="text-slate-600">
           Upload your CAFR PDF documents and extract municipal financial data automatically
         </p>
       </header>
 
       {/* Upload Section */}
-      <div className="card bg-white shadow-lg mb-8">
+      <div className="card bg-white shadow-md border border-accent mb-8 hover:border-secondary transition-colors">
         <div className="card-body">
-          <h2 className="card-title text-xl mb-4">
+          <h2 className="card-title text-xl mb-4 text-primary">
             <FiUpload className="mr-2" />
             Upload CAFR Document
           </h2>
@@ -71,9 +71,9 @@ export default function Home() {
 
       {/* Processing Status */}
       {selectedDocument && (
-        <div className="card bg-white shadow-lg mb-8">
+        <div className="card bg-white shadow-md mb-8">
           <div className="card-body">
-            <h2 className="card-title text-xl mb-4">
+            <h2 className="card-title text-xl mb-4 text-primary">
               <FiFile className="mr-2" />
               Processing Status: {selectedDocument.filename}
             </h2>
@@ -84,28 +84,42 @@ export default function Home() {
 
       {/* Results & Download */}
       {selectedDocument?.status === 'completed' && (
-        <div className="alert alert-success mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold">Processing Complete!</h3>
-              <p>Extracted {selectedDocument.recordCount || 0} financial records</p>
+        <div className="card bg-white shadow-md mb-8">
+          <div className="card-header bg-primary text-white p-4 rounded-t-lg">
+            <h3 className="font-semibold text-lg">Processing Complete!</h3>
+          </div>
+          <div className="card-body">
+            <div className="stats stats-horizontal shadow">
+              <div className="stat">
+                <div className="stat-title text-accent">Records Extracted</div>
+                <div className="stat-value text-primary">{selectedDocument.recordCount || 0}</div>
+              </div>
+              <div className="stat">
+                <div className="stat-title text-accent">Status</div>
+                <div className="stat-value text-primary">Ready</div>
+              </div>
             </div>
-            <button
-              className="btn btn-primary"
-              onClick={() => handleDownload(selectedDocument.id, selectedDocument.filename)}
-            >
-              <FiDownload className="mr-2" />
-              Download CSV
-            </button>
+            <div className="flex gap-3 mt-4">
+              <button
+                className="btn btn-secondary"
+                onClick={() => handleDownload(selectedDocument.id, selectedDocument.filename)}
+              >
+                <FiDownload className="mr-2" />
+                Download CSV
+              </button>
+              <button className="btn btn-outline">
+                Preview Data
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Document History */}
       {documents.length > 0 && (
-        <div className="card bg-white shadow-lg">
+        <div className="card bg-white shadow-md">
           <div className="card-body">
-            <h2 className="card-title text-xl mb-4">Recent Conversions</h2>
+            <h2 className="card-title text-xl mb-4 text-primary">Recent Conversions</h2>
             <div className="space-y-3">
               {documents.map((doc) => (
                 <div
@@ -154,16 +168,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="text-center mt-12 text-gray-500">
-        <p>
-          Powered by OpenAI GPT-4, Tesseract.js OCR, and modern web technologies
-        </p>
-        <p className="text-sm mt-2">
-          {/* TODO: Add Supabase auth & Stripe billing links */}
-          Secure processing • Data privacy protected
-        </p>
-      </footer>
+
     </div>
   );
 }
