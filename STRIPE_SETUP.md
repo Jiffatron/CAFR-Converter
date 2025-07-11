@@ -8,11 +8,11 @@ Copy `.env.example` to `.env` and fill in the placeholders:
 OPENAI_API_KEY="YOUR_OPENAI_KEY_HERE"
 SUPABASE_URL="https://YOUR_SUPABASE_PROJECT.supabase.co"
 SUPABASE_SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
-STRIPE_SECRET_KEY="sk_test_..." # Your Stripe secret key
-STRIPE_PRICE_ID="price_..." # Your $5 one-time payment price ID
+STRIPE_SECRET_KEY="sk_test_51RjpewPEyzTs9MWEg5IYLeynXAZfYU7sjFb1rNKBv0YKtOp9q1RijTck8YOJVS6crESeKP51rVuimd9mQjNn36fC00EEBfcf8J" # Your Stripe secret key
+STRIPE_PRICE_ID="https://buy.stripe.com/test_fZu6oJ9XO5z6cYB2rY53O00" # Your $5 one-time payment price ID
 CLIENT_SUCCESS_URL="http://localhost:5173/?session_id={CHECKOUT_SESSION_ID}"
 CLIENT_CANCEL_URL="http://localhost:5173/cancel"
-VITE_STRIPE_PUBLIC_KEY="pk_test_..." # Your Stripe publishable key
+VITE_STRIPE_PUBLIC_KEY="pk_test_51RjpewPEyzTs9MWEAE8xHDQeQw6hRbANL7sWm1BzDarjSMINOUSfmeuuts0RmURw0AIdP2BnTX1K7UmIjSpNCVhA00loAuQeoS" # Your Stripe publishable key
 ```
 
 ## 2. Stripe Dashboard Setup

@@ -1,82 +1,46 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import uploadRouter from "./routes/upload.js";
-import stripeRouter from "./routes/stripe.js";
+import express, { Request, Response, NextFunction } from "express";
+import cors from "cors";
+import uploadRouter from "./routes/upload";
+import stripeRouter from "./routes/stripe";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve uploaded files
-app.use('/uploads', express.static('uploads'));
+// Serve uploaded CSVs if you keep local copies
+app.use("/uploads", express.static("uploads"));
 
+// ------------------------------------------------------------------
+// Minimal request logger (only for /api or /stripe hits)
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
   res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
+    if (!req.path.startsWith("/api") && !req.path.startsWith("/stripe")) return;
+    const ms = Date.now() - start;
+    console.log(`${req.method} ${req.path} ${res.statusCode} – ${ms}ms`);
   });
-
   next();
 });
+// ------------------------------------------------------------------
 
-  // Add the new upload route
-  app.use("/api", uploadRouter);
-  
-  // Add Stripe routes
-  app.use("/stripe", stripeRouter);
+// Routes
+app.use("/api", uploadRouter);   // POST /api/upload
+app.use("/stripe", stripeRouter); // POST /stripe/create-checkout, GET /stripe/verify
 
-(async () => {
-  const server = await registerRoutes(app);
+// Render health check
+app.get("/healthz", (_req: Request, res: Response) => res.sendStatus(200));
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+// Global error handler (keeps Render logs tidy)
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  const code = err.status || err.statusCode || 500;
+  res.status(code).json({ message: err.message || "Internal Server Error" });
+  console.error(err);
+});
 
-    res.status(status).json({ message });
-    throw err;
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
-
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
-})();
+// Start server — Render will set PORT
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
+app.listen(PORT, HOST, () =>
+  console.log(`CAFR API running on ${HOST}:${PORT}`)
+);
