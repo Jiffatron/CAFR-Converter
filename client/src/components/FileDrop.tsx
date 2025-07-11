@@ -3,7 +3,7 @@ import { FiUpload, FiFile, FiX } from "react-icons/fi";
 import { apiClient, type Document } from "../api";
 
 interface FileDropProps {
-  onDocumentUploaded: (document: Document) => void;
+  onDocumentUploaded: (result: { success: boolean, summary: any, csvUrl: string }) => void;
 }
 
 export default function FileDrop({ onDocumentUploaded }: FileDropProps) {
@@ -38,9 +38,9 @@ export default function FileDrop({ onDocumentUploaded }: FileDropProps) {
     }, 200);
 
     try {
-      const document = await apiClient.uploadDocument(file);
+      const result = await apiClient.uploadDocument(file);
       setUploadProgress(100);
-      onDocumentUploaded(document);
+      onDocumentUploaded(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {

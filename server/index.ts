@@ -1,10 +1,14 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import uploadRouter from "./routes/upload.js";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -35,6 +39,9 @@ app.use((req, res, next) => {
 
   next();
 });
+
+  // Add the new upload route
+  app.use("/api", uploadRouter);
 
 (async () => {
   const server = await registerRoutes(app);

@@ -22,7 +22,7 @@ export interface ProcessingStep {
 }
 
 export class ApiClient {
-  async uploadDocument(file: File): Promise<Document> {
+  async uploadDocument(file: File): Promise<{ success: boolean, summary: any, csvUrl: string }> {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -33,7 +33,7 @@ export class ApiClient {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Upload failed');
+      throw new Error(error.error || 'Upload failed');
     }
 
     return response.json();

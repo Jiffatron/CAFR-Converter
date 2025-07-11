@@ -9,22 +9,49 @@ export default function Home() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleDocumentUploaded = useCallback((document: Document) => {
-    setSelectedDocument(document);
-    setDocuments(prev => [document, ...prev]);
+  const handleDocumentUploaded = useCallback((result: { success: boolean, summary: any, csvUrl: string }) => {
+    if (result.success) {
+      // Create a mock document object for display
+      const mockDocument: Document = {
+        id: Date.now(),
+        filename: "Uploaded CAFR Document",
+        status: 'completed',
+        uploadedAt: new Date().toISOString(),
+        completedAt: new Date().toISOString(),
+        recordCount: result.summary?.revenues?.length + result.summary?.expenditures?.length || 0
+      };
+      setSelectedDocument(mockDocument);
+      setDocuments(prev => [mockDocument, ...prev]);
+      
+      // Store the CSV URL for download
+      (window as any).lastCsvUrl = result.csvUrl;
+    }
   }, []);
 
   const handleDownload = async (documentId: number, filename: string) => {
     try {
-      const blob = await apiClient.downloadCSV(documentId);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.style.display = "none";
-      a.href = url;
-      a.download = `${filename.replace('.pdf', '')}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
+      // Use the stored CSV URL from the upload response
+      const csvUrl = (window as any).lastCsvUrl;
+      if (csvUrl) {
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = csvUrl;
+        a.download = `${filename.replace('.pdf', '')}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        // Fallback to original API call
+        const blob = await apiClient.downloadCSV(documentId);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = `${filename.replace('.pdf', '')}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
     } catch (error) {
       console.error('Download failed:', error);
       alert('Download failed. Please try again.');
