@@ -3,8 +3,19 @@ import fs from "fs";
 import path from "path";
 import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
-import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
+
+// Inline vite config for server development
+const viteConfig = {
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "../client/src"),
+      "@shared": path.resolve(import.meta.dirname, "../shared"),
+      "@assets": path.resolve(import.meta.dirname, "../attached_assets"),
+    },
+  },
+  root: path.resolve(import.meta.dirname, "../client"),
+};
 
 const viteLogger = createLogger();
 
@@ -68,7 +79,7 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  const distPath = path.resolve(import.meta.dirname, "../client/dist");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
