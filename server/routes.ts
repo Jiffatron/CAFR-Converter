@@ -30,12 +30,14 @@ const openai = new OpenAI({
 });
 
 // Import utility functions from lib
-import { parsePdfToText } from "./lib/parsePdf.js";
-import { performOCR as performOCRLib, isOCRNeeded } from "./lib/ocr.js";
-import { extractMunicipalData as extractMunicipalDataLib, convertToCSV } from "./lib/extractMuni.js";
+import { parsePdf } from "./lib/parsePdf.js";
+import { performOCR as performOCRLib } from "./lib/ocr.js";
+import { extractMunicipalData as extractMunicipalDataLib } from "./lib/extractMuni.js";
+import { toCsv } from "./lib/toCsv.js";
 
 async function extractTextFromPDF(filePath: string): Promise<string> {
-  const result = await parsePdfToText(filePath);
+  const dataBuffer = fs.readFileSync(filePath);
+  const result = await parsePdf(dataBuffer);
   return result.text;
 }
 
@@ -46,6 +48,10 @@ async function performOCR(filePath: string): Promise<string> {
 
 async function extractMunicipalData(text: string): Promise<any> {
   return await extractMunicipalDataLib(text);
+}
+
+function convertToCSV(extractedResult: any): string {
+  return toCsv(extractedResult.rows);
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -250,7 +256,7 @@ async function processDocument(documentId: number, filePath: string) {
       });
     }
 
-    const extractedData = await extractMunicipalData(extractedText);
+    const extractionResult = await extractMunicipalData(extractedText);
     
     if (aiStep) {
       await storage.updateProcessingStep(aiStep.id, {
@@ -268,12 +274,12 @@ async function processDocument(documentId: number, filePath: string) {
       });
     }
 
-    const csvContent = convertToCSV(extractedData);
+    const csvContent = convertToCSV(extractionResult);
     const csvPath = `uploads/${documentId}_output.csv`;
     fs.writeFileSync(csvPath, csvContent);
 
-    // Count records
-    const recordCount = csvContent.split('\n').length - 1; // Subtract header row
+    // Count records from the rows array
+    const recordCount = extractionResult.rows.length;
 
     if (csvStep) {
       await storage.updateProcessingStep(csvStep.id, {
@@ -286,7 +292,7 @@ async function processDocument(documentId: number, filePath: string) {
     await storage.updateDocument(documentId, {
       status: "completed",
       completedAt: new Date(),
-      extractedData,
+      extractedData: extractionResult.summary,
       recordCount,
       csvPath,
     });

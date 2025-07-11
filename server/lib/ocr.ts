@@ -7,23 +7,17 @@ export interface OCRResult {
   processingTime: number;
 }
 
-export async function performOCR(filePath: string): Promise<OCRResult> {
-  const startTime = Date.now();
-  
+export async function performOCR(filePath: string): Promise<{ text: string }> {
   try {
     // Create worker with English language
     const worker = await createWorker('eng');
     
-    const { data: { text, confidence } } = await worker.recognize(filePath);
+    const { data: { text } } = await worker.recognize(filePath);
     
     await worker.terminate();
     
-    const processingTime = Date.now() - startTime;
-    
     return {
-      text: text.trim(),
-      confidence: confidence / 100, // Convert to 0-1 range
-      processingTime
+      text: text.trim()
     };
   } catch (error) {
     throw new Error(`OCR processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

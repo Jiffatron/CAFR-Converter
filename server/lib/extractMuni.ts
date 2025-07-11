@@ -41,7 +41,7 @@ export interface MunicipalData {
   };
 }
 
-export async function extractMunicipalData(text: string): Promise<MunicipalData> {
+export async function extractMunicipalData(text: string): Promise<{ summary: any, rows: Record<string, unknown>[] }> {
   try {
     // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
     const response = await openai.chat.completions.create({
@@ -93,10 +93,87 @@ Extract actual dollar amounts (convert thousands/millions as needed). If no data
     }
     extractedData.metadata.extractedAt = new Date().toISOString();
     
-    return validateMunicipalData(extractedData);
+    const validatedData = validateMunicipalData(extractedData);
+    const rows = convertToRowsArray(validatedData);
+    
+    return {
+      summary: validatedData,
+      rows: rows
+    };
   } catch (error) {
     throw new Error(`AI extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+}
+
+function convertToRowsArray(data: MunicipalData): Record<string, unknown>[] {
+  const rows: Record<string, unknown>[] = [];
+  
+  // Add revenues
+  data.revenues.forEach(item => {
+    rows.push({
+      Category: item.category,
+      Type: "Revenue",
+      Description: item.description,
+      Amount: item.amount,
+      Fund: item.fund || "",
+      Municipality: data.metadata.municipalityName,
+      Fiscal_Year: data.metadata.fiscalYear
+    });
+  });
+  
+  // Add expenditures
+  data.expenditures.forEach(item => {
+    rows.push({
+      Category: item.category,
+      Type: "Expenditure", 
+      Description: item.description,
+      Amount: item.amount,
+      Fund: item.fund || "",
+      Municipality: data.metadata.municipalityName,
+      Fiscal_Year: data.metadata.fiscalYear
+    });
+  });
+  
+  // Add funds
+  data.funds.forEach(item => {
+    rows.push({
+      Category: item.name,
+      Type: "Fund Balance",
+      Description: item.type,
+      Amount: item.balance,
+      Fund: "",
+      Municipality: data.metadata.municipalityName,
+      Fiscal_Year: data.metadata.fiscalYear
+    });
+  });
+  
+  // Add assets
+  data.assets.forEach(item => {
+    rows.push({
+      Category: item.category,
+      Type: "Asset",
+      Description: item.description || "",
+      Amount: item.amount,
+      Fund: "",
+      Municipality: data.metadata.municipalityName,
+      Fiscal_Year: data.metadata.fiscalYear
+    });
+  });
+  
+  // Add liabilities
+  data.liabilities.forEach(item => {
+    rows.push({
+      Category: item.category,
+      Type: "Liability",
+      Description: item.description || "",
+      Amount: item.amount,
+      Fund: "",
+      Municipality: data.metadata.municipalityName,
+      Fiscal_Year: data.metadata.fiscalYear
+    });
+  });
+  
+  return rows;
 }
 
 function validateMunicipalData(data: any): MunicipalData {
