@@ -74,41 +74,53 @@ export default function FileDrop({ onDocumentUploaded }: FileDropProps) {
 
   return (
     <div className="w-full">
-      <div
-        className={`
-          border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer
-          ${isDragOver 
-            ? 'border-secondary bg-accent' 
-            : 'border-slate-300 hover:border-secondary'
-          }
-          ${isUploading ? 'pointer-events-none opacity-50' : ''}
-        `}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onClick={() => document.getElementById('file-input')?.click()}
-      >
-        <input
-          id="file-input"
-          type="file"
-          accept=".pdf"
-          onChange={handleFileInput}
-          className="hidden"
-          disabled={isUploading}
-        />
-        
-        <FiUpload className="mx-auto h-12 w-12 text-slate-600 mb-4" />
-        
-        <div className="space-y-2">
-          <h3 className="text-lg font-medium text-slate-600">
-            {isDragOver ? 'Drop your PDF here' : 'Upload CAFR Document'}
-          </h3>
-          <p className="text-slate-600">
-            Drag and drop your PDF file, or click to browse
-          </p>
-          <p className="text-sm text-slate-600">
-            Supports PDF files up to 50MB
-          </p>
+      <div className="card bg-base-100 shadow-xl rounded-2xl transition-transform hover:scale-105">
+        <div
+          className={`
+            border-2 border-dashed rounded-2xl p-8 text-center transition-colors cursor-pointer relative
+            ${isDragOver 
+              ? 'border-secondary bg-accent' 
+              : 'border-accent hover:border-secondary'
+            }
+            ${isUploading ? 'pointer-events-none' : ''}
+          `}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onClick={() => document.getElementById('file-input')?.click()}
+        >
+          {/* Upload overlay */}
+          {isUploading && (
+            <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center rounded-2xl">
+              <div className="text-center">
+                <div className="loading loading-spinner loading-lg text-primary"></div>
+                <p className="mt-2 text-sm font-medium">Processing...</p>
+              </div>
+            </div>
+          )}
+          
+          <input
+            id="file-input"
+            type="file"
+            accept=".pdf"
+            onChange={handleFileInput}
+            className="hidden"
+            disabled={isUploading}
+          />
+          
+          <FiUpload className="mx-auto h-12 w-12 text-slate-600 mb-4" />
+          
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium text-slate-600">
+              {isDragOver ? 'Drop your PDF here' : 'Upload CAFR Document'}
+            </h3>
+            <p className="text-slate-600">
+              Drag and drop your PDF file, or click to browse
+            </p>
+            <p className="text-sm text-slate-600">
+              Supports PDF files up to 50MB
+            </p>
+          </div>
         </div>
       </div>
 

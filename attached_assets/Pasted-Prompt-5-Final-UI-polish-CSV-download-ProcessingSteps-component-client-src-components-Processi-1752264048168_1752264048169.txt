@@ -1,0 +1,75 @@
+Prompt 5 — Final UI polish & CSV download
+
+ProcessingSteps component (client/src/components/ProcessingSteps.tsx)
+
+If the file doesn’t exist, create it.
+
+Accept props currentStep: "upload" | "parse" | "ocr" | "ai" | "csv" and render a vertical timeline using DaisyUI.
+
+Style rules:
+• completed = bg-primary text-primary-content with FiCheckCircle icon
+• current = bg-secondary text-secondary-content animate-pulse with FiLoader (spinning)
+• pending = bg-neutral text-neutral-content with grey circle
+
+FileDrop component
+
+Wrap existing drop zone in div class
+card bg-base-100 shadow-xl rounded-2xl transition-transform hover:scale-105
+
+Add click-to-upload: on click, trigger a hidden <input type="file">.
+
+While uploading is true, overlay a semi-transparent white layer with a spinner.
+
+App.tsx
+
+Import ProcessingSteps.
+
+Keep processing state and add step state; initial "upload".
+
+After selecting a file set step to "parse", then immediately to "ai" just before fetch.
+
+When the response arrives set step to "csv" and store summary, csvUrl.
+
+Render <ProcessingSteps currentStep={step} /> above FileDrop.
+
+Under ResultCard add a blue Download CSV button:
+onClick={() => window.open(csvUrl, "_blank")} (disabled until csvUrl exists).
+
+ResultCard (client/src/components/ResultCard.tsx)
+
+Accept summary & csvUrl.
+
+Show three stats:
+Records Extracted → summary.recordsExtracted
+Data Categories → summary.dataCategories
+File Size (KB) → summary.fileSizeKB
+
+If those keys are missing, fall back to the first three key-value pairs.
+
+Card header background bg-primary text-primary-content.
+
+Headline & footer copy
+
+Change main <h1> to “Turn 200-page CAFRs into clean spreadsheets in under 2 minutes”.
+
+Footer: centre, text-xs opacity-60 py-8, text:
+“Powered by GPT-4o • Tesseract.js OCR • Secure Processing”.
+
+vite.config.ts — confirm it still proxies /upload → http://localhost:3000.
+
+.env.example — ensure placeholders look like:
+OPENAI_API_KEY="YOUR_OPENAI_KEY_HERE"
+SUPABASE_URL="https://YOUR_SUPABASE_PROJECT.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
+STRIPE_SECRET_KEY="YOUR_STRIPE_SECRET_KEY"
+VITE_STRIPE_PUBLIC_KEY="YOUR_STRIPE_PUBLISHABLE_KEY"
+
+After the update run:
+
+bash
+Copy
+Edit
+npm install
+cp .env.example .env   # add your real OpenAI key
+npm run dev            # client on :5173, server on :3000
+You’ll now have a branded blue interface with timeline, progress overlay, and a working Download CSV button that grabs the Supabase file. Let me know when you’re ready for Stripe paywall or issuer-watch email alerts.
