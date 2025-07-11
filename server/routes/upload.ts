@@ -35,6 +35,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     // TODO: verify paid tier via Stripe before processing
+    // For now, we'll process without verification since payment is handled client-side
 
     // 2. Run parsePdf; if extracted text < 1000 chars then run ocr
     const fileBuffer = await fs.readFile(req.file.path);

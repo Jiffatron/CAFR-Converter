@@ -1,14 +1,32 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import FileDrop from "../components/FileDrop";
 import ProcessingSteps from "../components/ProcessingSteps";
 import ResultCard from "../components/ResultCard";
-import { FiTrendingUp } from "react-icons/fi";
+import { FiTrendingUp, FiCreditCard } from "react-icons/fi";
+import { payForParse, verifyPayment } from "../api/stripe";
 
 export default function Home() {
   const [step, setStep] = useState<"upload" | "parse" | "ocr" | "ai" | "csv">("upload");
   const [isProcessing, setIsProcessing] = useState(false);
   const [summary, setSummary] = useState<any>(null);
   const [csvUrl, setCsvUrl] = useState<string>("");
+  const [paid, setPaid] = useState(false);
+
+  // Check for payment verification on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get("session_id");
+    
+    if (sessionId) {
+      verifyPayment(sessionId).then((isPaid) => {
+        if (isPaid) {
+          setPaid(true);
+          // Clean up URL
+          window.history.replaceState({}, document.title, "/");
+        }
+      });
+    }
+  }, []);
 
   const handleDocumentUploaded = useCallback(async (result: { success: boolean, summary: any, csvUrl: string }) => {
     if (result.success) {
@@ -22,7 +40,17 @@ export default function Home() {
         setSummary(result.summary);
         setCsvUrl(result.csvUrl);
         setIsProcessing(false);
+        // Reset payment status for next file
+        setPaid(false);
       }, 1000);
+    }
+  }, []);
+
+  const handlePayForParse = useCallback(async () => {
+    try {
+      await payForParse();
+    } catch (error) {
+      alert("Payment failed. Please try again.");
     }
   }, []);
 
@@ -53,7 +81,28 @@ export default function Home() {
 
         {/* Upload Section */}
         <div className="max-w-2xl mx-auto">
-          <FileDrop onDocumentUploaded={handleDocumentUploaded} />
+          {paid ? (
+            <FileDrop onDocumentUploaded={handleDocumentUploaded} />
+          ) : (
+            <div className="card bg-base-100 shadow-xl rounded-2xl p-8 text-center">
+              <FiCreditCard className="mx-auto h-16 w-16 text-primary mb-4" />
+              <h3 className="text-2xl font-bold text-primary mb-4">
+                Professional CAFR Processing
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Get accurate financial data extraction from your CAFR documents using advanced AI and OCR technology.
+              </p>
+              <button 
+                className="btn btn-primary text-lg px-8 py-3"
+                onClick={handlePayForParse}
+              >
+                Unlock Processing – $5
+              </button>
+              <p className="text-xs text-gray-500 mt-4">
+                One-time payment per document • Secure processing with Stripe
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Results Section */}
@@ -68,11 +117,6 @@ export default function Home() {
           Powered by GPT-4o • Tesseract.js OCR • Secure Processing
         </footer>
       </div>
-    </div>
-  );
-}
-        </div>
-      </footer>
     </div>
   );
 }

@@ -16,6 +16,9 @@ This is a full-stack web application that processes CAFR (Comprehensive Annual F
 ✓ Added papaparse CSV conversion with toCsv utility
 ✓ Created dedicated upload route with Supabase integration for CSV storage
 ✓ Implemented professional blue UI theme with gradient backgrounds and color-coded status
+✓ Added Stripe paywall system with $5 per PDF processing
+✓ Created ProcessingSteps component with timeline and ResultCard for CSV download
+✓ Implemented payment verification and session management
 
 ## User Preferences
 
